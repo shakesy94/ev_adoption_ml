@@ -1,27 +1,19 @@
 import pandas as pd
 import numpy as np
 
-df_zip_codes = pd.read_csv('TX_WA_CO_NY.csv')
-df_dal = pd.read_csv('Dallas_electricity_gas_prices.csv')
-df_hou = pd.read_csv('Houston_electricity_gas_prices.csv')
-df_sea = pd.read_csv('Seattle_electricity_gas_prices.csv')
-df_nyc = pd.read_csv('NYC_electricity_gas_prices.csv')
-df_den = pd.read_csv('Denver_electricity_gas_prices.csv')
-df_TX_elec_rural = pd.read_excel('sp_tx_electricity_price_summary.xls')
-df_WA_elec_rural = pd.read_excel('sp_wa_electricity_price_summary.xls')
-df_NY_elec_rural = pd.read_excel('sp_ny_electricity_price_summary.xls')
-df_CO_elec_rural = pd.read_excel('sp_co_electricity_price_summary.xls')
-df_TX_gas = pd.read_excel('eia_tx_gas_prices_summary.xls', sheet_name='Data 1')
-df_WA_gas = pd.read_excel('eia_wa_gas_prices_summary.xls', sheet_name='Data 1')
-df_NY_gas = pd.read_excel('eia_ny_gas_prices_summary.xls', sheet_name='Data 1')
-df_CO_gas = pd.read_excel('eia_co_gas_prices_summary.xls', sheet_name='Data 1')
-
-all_zip = df_zip_codes.iloc[:,0:2]
-zip_dal = df_dal.iloc[:,6]
-zip_hou = df_hou.iloc[:,6]
-zip_sea = df_sea.iloc[:,6]
-zip_nyc = df_nyc.iloc[:,6]
-zip_den = df_den.iloc[:,6]
+df_dal = pd.read_csv('Data/Electricity_Gas/Dallas_electricity_gas_prices.csv')
+df_hou = pd.read_csv('Data/Electricity_Gas/Houston_electricity_gas_prices.csv')
+df_sea = pd.read_csv('Data/Electricity_Gas/Seattle_electricity_gas_prices.csv')
+df_nyc = pd.read_csv('Data/Electricity_Gas/NYC_electricity_gas_prices.csv')
+df_den = pd.read_csv('Data/Electricity_Gas/Denver_electricity_gas_prices.csv')
+df_TX_elec_rural = pd.read_excel('Data/Electricity_Gas/sp_tx_electricity_price_summary.xls')
+df_WA_elec_rural = pd.read_excel('Data/Electricity_Gas/sp_wa_electricity_price_summary.xls')
+df_NY_elec_rural = pd.read_excel('Data/Electricity_Gas/sp_ny_electricity_price_summary.xls')
+df_CO_elec_rural = pd.read_excel('Data/Electricity_Gas/sp_co_electricity_price_summary.xls')
+df_TX_gas = pd.read_excel('Data/Electricity_Gas/eia_tx_gas_prices_summary.xls', sheet_name='Data 1')
+df_WA_gas = pd.read_excel('Data/Electricity_Gas/eia_wa_gas_prices_summary.xls', sheet_name='Data 1')
+df_NY_gas = pd.read_excel('Data/Electricity_Gas/eia_ny_gas_prices_summary.xls', sheet_name='Data 1')
+df_CO_gas = pd.read_excel('Data/Electricity_Gas/eia_co_gas_prices_summary.xls', sheet_name='Data 1')
 
 data_copy_dal = df_dal.iloc[0:50,0:6]
 data_copy_hou = df_hou.iloc[0:50,0:6]
@@ -58,7 +50,6 @@ data_gas_NY_avg.rename(columns={"Back to Contents": "Date", "Data 1: New York Ci
 data_gas_CO_avg = df_CO_gas.iloc[2:,:]
 data_gas_CO_avg.rename(columns={"Back to Contents": "Date", "Data 1: Colorado All Grades All Formulations Retail Gasoline Prices (Dollars per Gallon)": "Gas Price"}, inplace = True)
 
-#print(data_gas_TX_avg.shape[0])
 # Add year column to EIA gas prices dataframe - make sure each state has the same number of gas price entries (rows)
 current_year = 2017
 months = 12
@@ -75,76 +66,59 @@ data_gas_WA_avg['Year'] = year_list
 data_gas_NY_avg['Year'] = year_list
 data_gas_CO_avg['Year'] = year_list
 
-print(data_gas_CO_avg.columns)
-
-zip_code_list = all_zip.values[:,1].tolist()
-zip_code_set = set(zip_code_list)
 month_list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 rural_electricity_price_avg_TX = data_copy_TX_rural.mean(axis=0).round(2)
-data_copy_TX_total = pd.concat([data_copy_dal, data_copy_hou]) #Add Dallas and Houston data before taking average for gas price
+data_copy_TX_total = pd.concat([data_copy_dal, data_copy_hou]) # Add Dallas and Houston data before taking average for gas price
 annual_gas_price_avg_TX = data_copy_TX_total.groupby('Year').mean().round(2)
+monthly_electricity_price_avg_urban_TX = data_copy_TX_total.groupby(['Year', 'Month']).mean().round(2) # Calculate average electricity and gas monthly prices for Houston + Dallas (will represent all of urban TX) 
 rural_electricity_price_avg_WA = data_copy_WA_rural.mean(axis=0).round(2)
 
 rural_electricity_price_avg_NY = data_copy_NY_rural.mean(axis=0).round(2)
 rural_electricity_price_avg_CO = data_copy_CO_rural.mean(axis=0).round(2)
 
-zip_state_dict = {}
+df_updated = pd.DataFrame(columns = ['State', 'Population Type', 'Year', 'Month', 'Electricity Price', 'Gas Price'])
 
-for index, row_out in all_zip.iterrows():
-    if row_out['ZIP Code'] in zip_state_dict.keys():
-        None
-    else:
-        zip_state_dict[row_out['ZIP Code']] = row_out['State']
+year_count = 0
+gas_index_count = 0
+for (columnName, columnData) in rural_electricity_price_avg_TX.iteritems(): # Year loop - Iterate through each year
+    year_count += 1
+    for month in month_list:
+        df_updated.loc[len(df_updated.index)] = ['TX', 'Rural', str(int(columnName)), month, columnData, data_gas_TX_avg['Gas Price'].iloc[gas_index_count]] #Need to find average gas price
+        gas_index_count += 1
 
-df_updated = pd.DataFrame(columns = ['State', 'Zip Code', 'Year', 'Month', 'Electricity Price', 'Gas Price'])
+for (columnName, columnData) in rural_electricity_price_avg_WA.iteritems(): # Year loop - Iterate through each year
+    year_count += 1
+    for month in month_list:
+        df_updated.loc[len(df_updated.index)] = ['WA', 'Rural', str(int(columnName)), month, columnData, data_gas_WA_avg['Gas Price'].iloc[gas_index_count]] #Need to find average gas price
 
-for key in zip_state_dict:
-    year_count = 0
-    gas_index_count = 0
-    if zip_state_dict[key] == 'TX' and not key in zip_dal.values and not key in zip_hou.values:
-        print(key)
-        for (columnName, columnData) in rural_electricity_price_avg_TX.iteritems(): # Year loop - Iterate through each year
-            year_count += 1
-            for month in month_list:
-                df_updated.loc[len(df_updated.index)] = ['TX', key, str(int(columnName)), month, columnData, data_gas_TX_avg['Gas Price'].iloc[gas_index_count]] #Need to find average gas price
-                gas_index_count += 1
-
-    elif zip_state_dict[key] == 'WA' and not key in zip_sea.values:
-        for (columnName, columnData) in rural_electricity_price_avg_WA.iteritems(): # Year loop - Iterate through each year
-            year_count += 1
-            for month in month_list:
-                df_updated.loc[len(df_updated.index)] = ['WA', key, str(int(columnName)), month, columnData, data_gas_WA_avg['Gas Price'].iloc[gas_index_count]] #Need to find average gas price
-
-    elif zip_state_dict[key] == 'NY' and not key in zip_nyc.values:
-        for (columnName, columnData) in rural_electricity_price_avg_NY.iteritems(): # Year loop - Iterate through each year
-            year_count += 1
-            for month in month_list:
-                df_updated.loc[len(df_updated.index)] = ['NY', key, str(int(columnName)), month, columnData, data_gas_NY_avg['Gas Price'].iloc[gas_index_count]] #Need to find average gas price
+for (columnName, columnData) in rural_electricity_price_avg_NY.iteritems(): # Year loop - Iterate through each year
+    year_count += 1
+    for month in month_list:
+        df_updated.loc[len(df_updated.index)] = ['NY', 'Rural', str(int(columnName)), month, columnData, data_gas_NY_avg['Gas Price'].iloc[gas_index_count]] #Need to find average gas price
         
-    elif zip_state_dict[key] == 'CO' and not key in zip_den.values:
-        for (columnName, columnData) in rural_electricity_price_avg_CO.iteritems(): # Year loop - Iterate through each year
-            year_count += 1
-            for month in month_list:
-                df_updated.loc[len(df_updated.index)] = ['CO', key, str(int(columnName)), month, columnData, data_gas_CO_avg['Gas Price'].iloc[gas_index_count]] #Need to find average gas price        
+for (columnName, columnData) in rural_electricity_price_avg_CO.iteritems(): # Year loop - Iterate through each year
+    year_count += 1
+    for month in month_list:
+        df_updated.loc[len(df_updated.index)] = ['CO', 'Rural', str(int(columnName)), month, columnData, data_gas_CO_avg['Gas Price'].iloc[gas_index_count]] #Need to find average gas price        
 
-for zip in zip_dal:
-    for index, row_out in data_copy_hou.iterrows():
-        df_updated.loc[len(df_updated.index)] = ['TX', zip, row_out['Year'], row_out['Month'], row_out['Electricity Price'], row_out['Gas Price']]
-for zip in zip_dal:
-    for index, row_out in data_copy_dal.iterrows():
-        df_updated.loc[len(df_updated.index)] = ['TX', zip, row_out['Year'], row_out['Month'], row_out['Electricity Price'], row_out['Gas Price']]
-for zip in zip_sea:
-    for index, row_out in data_copy_sea.iterrows():
-        df_updated.loc[len(df_updated.index)] = ['WA', zip, row_out['Year'], row_out['Month'], row_out['Electricity Price'], row_out['Gas Price']]
-for zip in zip_nyc:
-    for index, row_out in data_copy_nyc.iterrows():
-        df_updated.loc[len(df_updated.index)] = ['NY', zip, row_out['Year'], row_out['Month'], row_out['Electricity Price'], row_out['Gas Price']]  
-for zip in zip_den:
-    for index, row_out in data_copy_den.iterrows():
-        df_updated.loc[len(df_updated.index)] = ['CO', zip, row_out['Year'], row_out['Month'], row_out['Electricity Price'], row_out['Gas Price']]
+month_count = 0 # A bit messy but needed 
+year_count = 0
+urban_TX_year_list = list(set(data_copy_dal.iloc[:,2]))
+for index, row_out in monthly_electricity_price_avg_urban_TX.iterrows():
+    df_updated.loc[len(df_updated.index)] = ['TX', 'Urban', str(int(urban_TX_year_list[year_count])), month_list[month_count], row_out['Electricity Price'], row_out['Gas Price']]
+    month_count += 1
+    if month_count == 12: # Reached the last month - reset count and increment year
+        month_count = 0
+        year_count += 1
+for index, row_out in data_copy_sea.iterrows():
+    df_updated.loc[len(df_updated.index)] = ['WA', 'Urban', str(int(row_out['Year'])), row_out['Month'], row_out['Electricity Price'], row_out['Gas Price']]
+for index, row_out in data_copy_nyc.iterrows():
+    df_updated.loc[len(df_updated.index)] = ['NY', 'Urban', str(int(row_out['Year'])), row_out['Month'], row_out['Electricity Price'], row_out['Gas Price']]  
+for index, row_out in data_copy_den.iterrows():
+    df_updated.loc[len(df_updated.index)] = ['CO', 'Urban', str(int(row_out['Year'])), row_out['Month'], row_out['Electricity Price'], row_out['Gas Price']]
 
-
-df_updated.to_csv('electricity_gas_prices_updated.csv')
+print('Finish!')
+df_updated.to_csv('Data/electricity_gas_prices_reformatted.csv')
 
 
