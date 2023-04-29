@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
 
-df_dal = pd.read_csv('Data/Electricity_Gas/Dallas_electricity_gas_prices.csv')
-df_hou = pd.read_csv('Data/Electricity_Gas/Houston_electricity_gas_prices.csv')
-df_sea = pd.read_csv('Data/Electricity_Gas/Seattle_electricity_gas_prices.csv')
-df_nyc = pd.read_csv('Data/Electricity_Gas/NYC_electricity_gas_prices.csv')
-df_den = pd.read_csv('Data/Electricity_Gas/Denver_electricity_gas_prices.csv')
+df_dal = pd.read_csv('Data/Electricity_Gas/bls_Dallas_electricity_gas_prices.csv')
+df_hou = pd.read_csv('Data/Electricity_Gas/bls_Houston_electricity_gas_prices.csv')
+df_sea = pd.read_csv('Data/Electricity_Gas/bls_Seattle_electricity_gas_prices.csv')
+df_nyc = pd.read_csv('Data/Electricity_Gas/bls_NYC_electricity_gas_prices.csv')
+df_den = pd.read_csv('Data/Electricity_Gas/bls_Denver_electricity_gas_prices.csv')
 df_TX_elec_rural = pd.read_excel('Data/Electricity_Gas/sp_tx_electricity_price_summary.xls')
 df_WA_elec_rural = pd.read_excel('Data/Electricity_Gas/sp_wa_electricity_price_summary.xls')
 df_NY_elec_rural = pd.read_excel('Data/Electricity_Gas/sp_ny_electricity_price_summary.xls')
@@ -15,11 +15,11 @@ df_WA_gas = pd.read_excel('Data/Electricity_Gas/eia_wa_gas_prices_summary.xls', 
 df_NY_gas = pd.read_excel('Data/Electricity_Gas/eia_ny_gas_prices_summary.xls', sheet_name='Data 1')
 df_CO_gas = pd.read_excel('Data/Electricity_Gas/eia_co_gas_prices_summary.xls', sheet_name='Data 1')
 
-data_copy_dal = df_dal.iloc[0:50,0:6]
-data_copy_hou = df_hou.iloc[0:50,0:6]
-data_copy_sea = df_sea.iloc[0:50,0:6]
-data_copy_nyc = df_nyc.iloc[0:50,0:6]
-data_copy_den = df_den.iloc[0:50,0:6]
+data_copy_dal = df_dal.iloc[0:74,0:6]
+data_copy_hou = df_hou.iloc[0:74,0:6]
+data_copy_sea = df_sea.iloc[0:74,0:6]
+data_copy_nyc = df_nyc.iloc[0:74,0:6]
+data_copy_den = df_den.iloc[0:74,0:6]
 
 data_copy_TX_rural = df_TX_elec_rural.iloc[8:31,1:6].dropna(axis=1, how='all').dropna(how='any')
 data_copy_TX_rural.rename(columns=data_copy_TX_rural.iloc[0], inplace = True) #turn first row into column header
