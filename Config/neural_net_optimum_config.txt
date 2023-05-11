@@ -1,0 +1,2 @@
+Best trial config: {'n_layers': 4, 'n_hidden_dim': 8, 'lr': 0.0004697091486004313, 'batch_size': 64, 'train_iterations': 50}
+Best trial final validation loss: 196555.46875
