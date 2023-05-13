@@ -26,6 +26,7 @@ data_copy_TX_rural.rename(columns=data_copy_TX_rural.iloc[0], inplace = True) #t
 data_copy_TX_rural.drop([8], inplace = True) #drop former row (now column header)
 data_copy_TX_rural = data_copy_TX_rural.loc[~(data_copy_TX_rural==0).any(axis=1)] #remove 0s
 
+
 data_copy_WA_rural = df_WA_elec_rural.iloc[8:40,1:6].dropna(axis=1, how='all').dropna(how='any')
 data_copy_WA_rural.rename(columns=data_copy_WA_rural.iloc[0], inplace = True) #turn first row into column header
 data_copy_WA_rural.drop([8], inplace = True) #drop former row (now column header)
@@ -68,14 +69,18 @@ data_gas_CO_avg['Year'] = year_list
 
 month_list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
-rural_electricity_price_avg_TX = data_copy_TX_rural.mean(axis=0).round(2)
+data_copy_TX_rural = np.divide(data_copy_TX_rural, 100) # Convert cents/KWh to $/KWh
+rural_electricity_price_avg_TX = data_copy_TX_rural.mean(axis=0).round(4) # Round to 4 digits after decimal to match raw data granularity
 data_copy_TX_total = pd.concat([data_copy_dal, data_copy_hou]) # Add Dallas and Houston data before taking average for gas price
-annual_gas_price_avg_TX = data_copy_TX_total.groupby('Year').mean().round(2)
-monthly_electricity_price_avg_urban_TX = data_copy_TX_total.groupby(['Year', 'Month']).mean().round(2) # Calculate average electricity and gas monthly prices for Houston + Dallas (will represent all of urban TX) 
-rural_electricity_price_avg_WA = data_copy_WA_rural.mean(axis=0).round(2)
+annual_gas_price_avg_TX = data_copy_TX_total.groupby('Year').mean().round(4)
+monthly_electricity_price_avg_urban_TX = data_copy_TX_total.groupby(['Year', 'Month']).mean().round(3) # Calculate average electricity and gas monthly prices for Houston + Dallas (will represent all of urban TX) 
 
-rural_electricity_price_avg_NY = data_copy_NY_rural.mean(axis=0).round(2)
-rural_electricity_price_avg_CO = data_copy_CO_rural.mean(axis=0).round(2)
+data_copy_WA_rural = np.divide(data_copy_WA_rural, 100) # Convert cents/KWh to $/KWh
+rural_electricity_price_avg_WA = data_copy_WA_rural.mean(axis=0).round(4) # Round to 4 digits after decimal to match raw data granularity
+data_copy_NY_rural = np.divide(data_copy_NY_rural, 100) # Convert cents/KWh to $/KWh
+rural_electricity_price_avg_NY = data_copy_NY_rural.mean(axis=0).round(4) # Round to 4 digits after decimal to match raw data granularity
+data_copy_CO_rural = np.divide(data_copy_CO_rural, 100) # Convert cents/KWh to $/KWh
+rural_electricity_price_avg_CO = data_copy_CO_rural.mean(axis=0).round(4) # Round to 4 digits after decimal to match raw data granularity
 
 df_updated = pd.DataFrame(columns = ['State', 'Population Type', 'Year', 'Month', 'Electricity Price', 'Gas Price'])
 
@@ -84,13 +89,13 @@ gas_index_count = 0
 for (columnName, columnData) in rural_electricity_price_avg_TX.iteritems(): # Year loop - Iterate through each year
     year_count += 1
     for month in month_list:
-        df_updated.loc[len(df_updated.index)] = ['TX', 'Rural', str(int(columnName)), month, columnData, data_gas_TX_avg['Gas Price'].iloc[gas_index_count]] #Need to find average gas price
+        df_updated.loc[len(df_updated.index)] = ['TX', 'Rural', str(int(columnName)), month, columnData, data_gas_TX_avg['Gas Price'].iloc[gas_index_count]] 
         gas_index_count += 1
 
 for (columnName, columnData) in rural_electricity_price_avg_WA.iteritems(): # Year loop - Iterate through each year
     year_count += 1
     for month in month_list:
-        df_updated.loc[len(df_updated.index)] = ['WA', 'Rural', str(int(columnName)), month, columnData, data_gas_WA_avg['Gas Price'].iloc[gas_index_count]] #Need to find average gas price
+        df_updated.loc[len(df_updated.index)] = ['WA', 'Rural', str(int(columnName)), month, columnData, data_gas_WA_avg['Gas Price'].iloc[gas_index_count]]
 
 for (columnName, columnData) in rural_electricity_price_avg_NY.iteritems(): # Year loop - Iterate through each year
     year_count += 1
